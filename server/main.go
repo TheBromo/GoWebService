@@ -19,10 +19,15 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func status (w http.ResponseWriter, req *http.Request){
+	fmt.Fprintf(w, "received status request\n")
+}
+
 func main() {
 
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
+	http.HandleFunc("/status", status)
 
 	http.ListenAndServe(":8090", nil)
 }

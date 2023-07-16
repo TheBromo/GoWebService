@@ -1,27 +1,27 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"net/http"
+	"net/url"
+
+	conn "github.com/TheBromo/goWebService/client/connection"
 )
 
 func main() {
+	u, err := url.Parse("http://localhost:8090")
 
-	resp, err := http.Get("http://localhost:8090/headers")
 	if err != nil {
+		fmt.Println("Url could not be parsed")
 		panic(err)
 	}
-	defer resp.Body.Close()
 
-	fmt.Println("Response status:", resp.Status)
-
-	scanner := bufio.NewScanner(resp.Body)
-	for i := 0; scanner.Scan() && i < 5; i++ {
-		fmt.Println(scanner.Text())
+	connection := conn.Connection{
+		Addr: u,
 	}
 
-	if err := scanner.Err(); err != nil {
-		panic(err)
+	for connection.Available() {
+		//TODO ask for input
+		// display answer
 	}
+
 }
