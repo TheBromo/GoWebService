@@ -17,7 +17,7 @@ message Logout{
 
 
 service ChatService {
-    rpc Register( Login) returns (Login);
+    rpc Register(Login) returns (Login);
     rpc Unregister(Logout) returns (Logout);
     rpc HandleMessage(stream Message) returns ( stream Message);
 }

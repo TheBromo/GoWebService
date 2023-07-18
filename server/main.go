@@ -1,33 +1,46 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
-	"net/http"
+	"log"
+	"net"
+
+	pb "github.com/TheBromo/goWebService/common/chat"
+	"google.golang.org/grpc"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
+var (
+	port = flag.Int("port", 50051, "The server port")
+)
 
-	fmt.Fprintf(w, "hello\n")
+type server struct {
+	pb.UnimplementedChatServiceServer
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
-
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
+func (c *server) Register(ctx context.Context, in *pb.Login, opts ...grpc.CallOption) (*pb.Login, error) {
+	return nil, nil
 }
 
-func status (w http.ResponseWriter, req *http.Request){
-	fmt.Fprintf(w, "received status request\n")
+func (c *server) Unregister(ctx context.Context, in *pb.Logout, opts ...grpc.CallOption) (*pb.Logout, error) {
+	return nil, nil
+}
+
+func (c *server) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (pb.ChatService_HandleMessageClient, error) {
+	return nil, nil
 }
 
 func main() {
-
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
-	http.HandleFunc("/status", status)
-
-	http.ListenAndServe(":8090", nil)
+	flag.Parse()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterChatServiceServer(s, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
