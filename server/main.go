@@ -19,16 +19,16 @@ type server struct {
 	pb.UnimplementedChatServiceServer
 }
 
-func (c *server) Register(ctx context.Context, in *pb.Login, opts ...grpc.CallOption) (*pb.Login, error) {
+func (c *server) RegisterRegister(context.Context, *pb.Login) (*pb.Login, error) {
 	return nil, nil
 }
 
-func (c *server) Unregister(ctx context.Context, in *pb.Logout, opts ...grpc.CallOption) (*pb.Logout, error) {
+func (c *server) Unregister(context.Context, *pb.Logout) (*pb.Logout, error) {
 	return nil, nil
 }
 
-func (c *server) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (pb.ChatService_HandleMessageClient, error) {
-	return nil, nil
+func (c *server) HandleMessage(e pb.ChatService_HandleMessageServer) error {
+	return nil
 }
 
 func main() {
