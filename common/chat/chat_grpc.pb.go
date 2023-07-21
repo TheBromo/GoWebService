@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -64,7 +65,7 @@ func (c *chatServiceClient) HandleMessage(ctx context.Context, opts ...grpc.Call
 
 type ChatService_HandleMessageClient interface {
 	Send(*Message) error
-	Recv() (*Message, error)
+	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -76,8 +77,11 @@ func (x *chatServiceHandleMessageClient) Send(m *Message) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *chatServiceHandleMessageClient) Recv() (*Message, error) {
-	m := new(Message)
+func (x *chatServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -161,7 +165,7 @@ func _ChatService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStrea
 }
 
 type ChatService_HandleMessageServer interface {
-	Send(*Message) error
+	SendAndClose(*emptypb.Empty) error
 	Recv() (*Message, error)
 	grpc.ServerStream
 }
@@ -170,7 +174,7 @@ type chatServiceHandleMessageServer struct {
 	grpc.ServerStream
 }
 
-func (x *chatServiceHandleMessageServer) Send(m *Message) error {
+func (x *chatServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -202,7 +206,126 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "HandleMessage",
 			Handler:       _ChatService_HandleMessage_Handler,
-			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "chat.proto",
+}
+
+// ClientServiceClient is the client API for ClientService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ClientServiceClient interface {
+	HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ClientService_HandleMessageClient, error)
+}
+
+type clientServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewClientServiceClient(cc grpc.ClientConnInterface) ClientServiceClient {
+	return &clientServiceClient{cc}
+}
+
+func (c *clientServiceClient) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ClientService_HandleMessageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ClientService_ServiceDesc.Streams[0], "/chat.ClientService/HandleMessage", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &clientServiceHandleMessageClient{stream}
+	return x, nil
+}
+
+type ClientService_HandleMessageClient interface {
+	Send(*Message) error
+	CloseAndRecv() (*emptypb.Empty, error)
+	grpc.ClientStream
+}
+
+type clientServiceHandleMessageClient struct {
+	grpc.ClientStream
+}
+
+func (x *clientServiceHandleMessageClient) Send(m *Message) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *clientServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// ClientServiceServer is the server API for ClientService service.
+// All implementations must embed UnimplementedClientServiceServer
+// for forward compatibility
+type ClientServiceServer interface {
+	HandleMessage(ClientService_HandleMessageServer) error
+	mustEmbedUnimplementedClientServiceServer()
+}
+
+// UnimplementedClientServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedClientServiceServer struct {
+}
+
+func (UnimplementedClientServiceServer) HandleMessage(ClientService_HandleMessageServer) error {
+	return status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
+}
+func (UnimplementedClientServiceServer) mustEmbedUnimplementedClientServiceServer() {}
+
+// UnsafeClientServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ClientServiceServer will
+// result in compilation errors.
+type UnsafeClientServiceServer interface {
+	mustEmbedUnimplementedClientServiceServer()
+}
+
+func RegisterClientServiceServer(s grpc.ServiceRegistrar, srv ClientServiceServer) {
+	s.RegisterService(&ClientService_ServiceDesc, srv)
+}
+
+func _ClientService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ClientServiceServer).HandleMessage(&clientServiceHandleMessageServer{stream})
+}
+
+type ClientService_HandleMessageServer interface {
+	SendAndClose(*emptypb.Empty) error
+	Recv() (*Message, error)
+	grpc.ServerStream
+}
+
+type clientServiceHandleMessageServer struct {
+	grpc.ServerStream
+}
+
+func (x *clientServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *clientServiceHandleMessageServer) Recv() (*Message, error) {
+	m := new(Message)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// ClientService_ServiceDesc is the grpc.ServiceDesc for ClientService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ClientService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "chat.ClientService",
+	HandlerType: (*ClientServiceServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "HandleMessage",
+			Handler:       _ClientService_HandleMessage_Handler,
 			ClientStreams: true,
 		},
 	},
