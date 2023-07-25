@@ -24,6 +24,6 @@ service ChatService {
     rpc HandleMessage(stream Message) returns (google.protobuf.Empty);
 }
 
-service ClientService {
+service TerminalAppService {
     rpc HandleMessage(stream Message)returns (google.protobuf.Empty);
 }

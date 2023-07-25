@@ -212,45 +212,45 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "chat.proto",
 }
 
-// ClientServiceClient is the client API for ClientService service.
+// TerminalAppServiceClient is the client API for TerminalAppService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ClientServiceClient interface {
-	HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ClientService_HandleMessageClient, error)
+type TerminalAppServiceClient interface {
+	HandleMessage(ctx context.Context, opts ...grpc.CallOption) (TerminalAppService_HandleMessageClient, error)
 }
 
-type clientServiceClient struct {
+type terminalAppServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewClientServiceClient(cc grpc.ClientConnInterface) ClientServiceClient {
-	return &clientServiceClient{cc}
+func NewTerminalAppServiceClient(cc grpc.ClientConnInterface) TerminalAppServiceClient {
+	return &terminalAppServiceClient{cc}
 }
 
-func (c *clientServiceClient) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ClientService_HandleMessageClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ClientService_ServiceDesc.Streams[0], "/chat.ClientService/HandleMessage", opts...)
+func (c *terminalAppServiceClient) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (TerminalAppService_HandleMessageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TerminalAppService_ServiceDesc.Streams[0], "/chat.TerminalAppService/HandleMessage", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &clientServiceHandleMessageClient{stream}
+	x := &terminalAppServiceHandleMessageClient{stream}
 	return x, nil
 }
 
-type ClientService_HandleMessageClient interface {
+type TerminalAppService_HandleMessageClient interface {
 	Send(*Message) error
 	CloseAndRecv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
-type clientServiceHandleMessageClient struct {
+type terminalAppServiceHandleMessageClient struct {
 	grpc.ClientStream
 }
 
-func (x *clientServiceHandleMessageClient) Send(m *Message) error {
+func (x *terminalAppServiceHandleMessageClient) Send(m *Message) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *clientServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
+func (x *terminalAppServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -261,53 +261,53 @@ func (x *clientServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error
 	return m, nil
 }
 
-// ClientServiceServer is the server API for ClientService service.
-// All implementations must embed UnimplementedClientServiceServer
+// TerminalAppServiceServer is the server API for TerminalAppService service.
+// All implementations must embed UnimplementedTerminalAppServiceServer
 // for forward compatibility
-type ClientServiceServer interface {
-	HandleMessage(ClientService_HandleMessageServer) error
-	mustEmbedUnimplementedClientServiceServer()
+type TerminalAppServiceServer interface {
+	HandleMessage(TerminalAppService_HandleMessageServer) error
+	mustEmbedUnimplementedTerminalAppServiceServer()
 }
 
-// UnimplementedClientServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedClientServiceServer struct {
+// UnimplementedTerminalAppServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedTerminalAppServiceServer struct {
 }
 
-func (UnimplementedClientServiceServer) HandleMessage(ClientService_HandleMessageServer) error {
+func (UnimplementedTerminalAppServiceServer) HandleMessage(TerminalAppService_HandleMessageServer) error {
 	return status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
 }
-func (UnimplementedClientServiceServer) mustEmbedUnimplementedClientServiceServer() {}
+func (UnimplementedTerminalAppServiceServer) mustEmbedUnimplementedTerminalAppServiceServer() {}
 
-// UnsafeClientServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ClientServiceServer will
+// UnsafeTerminalAppServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TerminalAppServiceServer will
 // result in compilation errors.
-type UnsafeClientServiceServer interface {
-	mustEmbedUnimplementedClientServiceServer()
+type UnsafeTerminalAppServiceServer interface {
+	mustEmbedUnimplementedTerminalAppServiceServer()
 }
 
-func RegisterClientServiceServer(s grpc.ServiceRegistrar, srv ClientServiceServer) {
-	s.RegisterService(&ClientService_ServiceDesc, srv)
+func RegisterTerminalAppServiceServer(s grpc.ServiceRegistrar, srv TerminalAppServiceServer) {
+	s.RegisterService(&TerminalAppService_ServiceDesc, srv)
 }
 
-func _ClientService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ClientServiceServer).HandleMessage(&clientServiceHandleMessageServer{stream})
+func _TerminalAppService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TerminalAppServiceServer).HandleMessage(&terminalAppServiceHandleMessageServer{stream})
 }
 
-type ClientService_HandleMessageServer interface {
+type TerminalAppService_HandleMessageServer interface {
 	SendAndClose(*emptypb.Empty) error
 	Recv() (*Message, error)
 	grpc.ServerStream
 }
 
-type clientServiceHandleMessageServer struct {
+type terminalAppServiceHandleMessageServer struct {
 	grpc.ServerStream
 }
 
-func (x *clientServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
+func (x *terminalAppServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *clientServiceHandleMessageServer) Recv() (*Message, error) {
+func (x *terminalAppServiceHandleMessageServer) Recv() (*Message, error) {
 	m := new(Message)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -315,17 +315,17 @@ func (x *clientServiceHandleMessageServer) Recv() (*Message, error) {
 	return m, nil
 }
 
-// ClientService_ServiceDesc is the grpc.ServiceDesc for ClientService service.
+// TerminalAppService_ServiceDesc is the grpc.ServiceDesc for TerminalAppService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ClientService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "chat.ClientService",
-	HandlerType: (*ClientServiceServer)(nil),
+var TerminalAppService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "chat.TerminalAppService",
+	HandlerType: (*TerminalAppServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "HandleMessage",
-			Handler:       _ClientService_HandleMessage_Handler,
+			Handler:       _TerminalAppService_HandleMessage_Handler,
 			ClientStreams: true,
 		},
 	},

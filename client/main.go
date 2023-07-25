@@ -1,15 +1,13 @@
 package main
 
 import (
-	"context"
 	"flag"
+	"fmt"
 	"log"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"net"
 
 	pb "github.com/TheBromo/goWebService/common/chat"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -19,41 +17,27 @@ const (
 var (
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 	name = flag.String("name", defaultName, "Name to greet")
+	port = flag.Int("port", 50051, "The server port")
 )
 
-
 type server struct {
-	pb.ChatServiceClient
+	pb.UnimplementedTerminalAppServiceServer
 }
 
-func (c *server) RegisterRegister(context.Context, *pb.Login) (*pb.Login, error) {
-	return nil, nil
-}
-
-func (c *server) Unregister(context.Context, *pb.Logout) (*pb.Logout, error) {
-	return nil, nil
-}
-
-func (c *server) HandleMessage(e pb.ChatService_HandleMessageServer) error {
+func (c *server) HandleMessage(e pb.TerminalAppService_HandleMessageServer) error {
 	return nil
 }
 
 func main() {
 	flag.Parse()
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
-	defer conn.Close()
-
-	
-	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	r, err := c.SayHello(ctx, )
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+	s := grpc.NewServer()
+	pb.RegisterTerminalAppServiceServer(s, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
-	log.Printf("Greeting: %s", r.GetMessage())
 }
