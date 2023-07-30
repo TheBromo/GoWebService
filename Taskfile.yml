@@ -6,7 +6,7 @@ version: '3'
 tasks:
   client:
     cmds:
-      - go run ./client
+      - go run ./client/cmd
   server:
     cmds:
       - go run ./server
