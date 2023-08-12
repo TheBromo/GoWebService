@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	receiver "github.com/TheBromo/goWebService/client/message"
+	message "github.com/TheBromo/goWebService/client/message"
 )
 
 var (
@@ -17,6 +17,5 @@ func main() {
 
 	log.Println("starting client")
 
-	receiver.Start(*port)
-
+	message.StartReceiver(*port)
 }

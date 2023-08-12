@@ -13,13 +13,16 @@ import (
 
 var (
 	port = flag.Int("port", 50051, "The server port")
+	clients = make(map[string]int)
 )
 
 type server struct {
 	pb.UnimplementedChatServiceServer
 }
 
-func (c *server) RegisterRegister(context.Context, *pb.Login) (*pb.Login, error) {
+func (c *server) RegisterRegister(context context.Context, message *pb.Login) (*pb.Login, error) {
+	username := message.GetUsername()
+	
 	return nil, nil
 }
 

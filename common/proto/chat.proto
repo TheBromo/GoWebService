@@ -13,14 +13,10 @@ message Login {
     string username = 3;
 }
 
-message Logout{ 
-
-}
-
 
 service ChatService {
-    rpc Register(Login) returns (Login);
-    rpc Unregister(Logout) returns (Logout);
+    rpc Register(Login) returns (google.protobuf.Empty);
+    rpc Unregister(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc HandleMessage(stream Message) returns (google.protobuf.Empty);
 }
 

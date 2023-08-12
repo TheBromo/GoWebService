@@ -17,7 +17,7 @@ func (c *Server) HandleMessage(e pb.TerminalAppService_HandleMessageServer) erro
 	return nil
 }
 
-func Start(port int) {
+func StartReceiver(port int) {
 	log.Println("starting receiver")
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
