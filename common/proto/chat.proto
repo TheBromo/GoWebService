@@ -17,9 +17,9 @@ message Login {
 service ChatService {
     rpc Register(Login) returns (google.protobuf.Empty);
     rpc Unregister(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc HandleMessage(stream Message) returns (google.protobuf.Empty);
+    rpc HandleMessage(Message) returns (google.protobuf.Empty);
 }
 
 service TerminalAppService {
-    rpc HandleMessage(stream Message)returns (google.protobuf.Empty);
+    rpc HandleMessage(Message)returns (google.protobuf.Empty);
 }

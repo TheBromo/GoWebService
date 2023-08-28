@@ -1,20 +1,22 @@
 package message
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 
 	pb "github.com/TheBromo/goWebService/common/chat"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Server struct {
 	pb.UnimplementedTerminalAppServiceServer
 }
 
-func (c *Server) HandleMessage(e pb.TerminalAppService_HandleMessageServer) error {
-	return nil
+func (c *Server) HandleMessage(context context.Context, message *pb.Message) (*emptypb.Empty, error) {
+	return nil, nil
 }
 
 func StartReceiver(port int) {

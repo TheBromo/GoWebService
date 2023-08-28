@@ -23,9 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
-	Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*Login, error)
-	Unregister(ctx context.Context, in *Logout, opts ...grpc.CallOption) (*Logout, error)
-	HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ChatService_HandleMessageClient, error)
+	Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Unregister(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	HandleMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type chatServiceClient struct {
@@ -36,8 +36,8 @@ func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
 }
 
-func (c *chatServiceClient) Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*Login, error) {
-	out := new(Login)
+func (c *chatServiceClient) Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/chat.ChatService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (c *chatServiceClient) Register(ctx context.Context, in *Login, opts ...grp
 	return out, nil
 }
 
-func (c *chatServiceClient) Unregister(ctx context.Context, in *Logout, opts ...grpc.CallOption) (*Logout, error) {
-	out := new(Logout)
+func (c *chatServiceClient) Unregister(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/chat.ChatService/Unregister", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -54,47 +54,22 @@ func (c *chatServiceClient) Unregister(ctx context.Context, in *Logout, opts ...
 	return out, nil
 }
 
-func (c *chatServiceClient) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (ChatService_HandleMessageClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[0], "/chat.ChatService/HandleMessage", opts...)
+func (c *chatServiceClient) HandleMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/HandleMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &chatServiceHandleMessageClient{stream}
-	return x, nil
-}
-
-type ChatService_HandleMessageClient interface {
-	Send(*Message) error
-	CloseAndRecv() (*emptypb.Empty, error)
-	grpc.ClientStream
-}
-
-type chatServiceHandleMessageClient struct {
-	grpc.ClientStream
-}
-
-func (x *chatServiceHandleMessageClient) Send(m *Message) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *chatServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
-	Register(context.Context, *Login) (*Login, error)
-	Unregister(context.Context, *Logout) (*Logout, error)
-	HandleMessage(ChatService_HandleMessageServer) error
+	Register(context.Context, *Login) (*emptypb.Empty, error)
+	Unregister(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	HandleMessage(context.Context, *Message) (*emptypb.Empty, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -102,14 +77,14 @@ type ChatServiceServer interface {
 type UnimplementedChatServiceServer struct {
 }
 
-func (UnimplementedChatServiceServer) Register(context.Context, *Login) (*Login, error) {
+func (UnimplementedChatServiceServer) Register(context.Context, *Login) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedChatServiceServer) Unregister(context.Context, *Logout) (*Logout, error) {
+func (UnimplementedChatServiceServer) Unregister(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unregister not implemented")
 }
-func (UnimplementedChatServiceServer) HandleMessage(ChatService_HandleMessageServer) error {
-	return status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
+func (UnimplementedChatServiceServer) HandleMessage(context.Context, *Message) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -143,7 +118,7 @@ func _ChatService_Register_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _ChatService_Unregister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Logout)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -155,35 +130,27 @@ func _ChatService_Unregister_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/chat.ChatService/Unregister",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).Unregister(ctx, req.(*Logout))
+		return srv.(ChatServiceServer).Unregister(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChatService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ChatServiceServer).HandleMessage(&chatServiceHandleMessageServer{stream})
-}
-
-type ChatService_HandleMessageServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*Message, error)
-	grpc.ServerStream
-}
-
-type chatServiceHandleMessageServer struct {
-	grpc.ServerStream
-}
-
-func (x *chatServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *chatServiceHandleMessageServer) Recv() (*Message, error) {
-	m := new(Message)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _ChatService_HandleMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(ChatServiceServer).HandleMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/HandleMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).HandleMessage(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
@@ -201,14 +168,12 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Unregister",
 			Handler:    _ChatService_Unregister_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "HandleMessage",
-			Handler:       _ChatService_HandleMessage_Handler,
-			ClientStreams: true,
+			MethodName: "HandleMessage",
+			Handler:    _ChatService_HandleMessage_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "chat.proto",
 }
 
@@ -216,7 +181,7 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TerminalAppServiceClient interface {
-	HandleMessage(ctx context.Context, opts ...grpc.CallOption) (TerminalAppService_HandleMessageClient, error)
+	HandleMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type terminalAppServiceClient struct {
@@ -227,45 +192,20 @@ func NewTerminalAppServiceClient(cc grpc.ClientConnInterface) TerminalAppService
 	return &terminalAppServiceClient{cc}
 }
 
-func (c *terminalAppServiceClient) HandleMessage(ctx context.Context, opts ...grpc.CallOption) (TerminalAppService_HandleMessageClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TerminalAppService_ServiceDesc.Streams[0], "/chat.TerminalAppService/HandleMessage", opts...)
+func (c *terminalAppServiceClient) HandleMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/chat.TerminalAppService/HandleMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &terminalAppServiceHandleMessageClient{stream}
-	return x, nil
-}
-
-type TerminalAppService_HandleMessageClient interface {
-	Send(*Message) error
-	CloseAndRecv() (*emptypb.Empty, error)
-	grpc.ClientStream
-}
-
-type terminalAppServiceHandleMessageClient struct {
-	grpc.ClientStream
-}
-
-func (x *terminalAppServiceHandleMessageClient) Send(m *Message) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *terminalAppServiceHandleMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // TerminalAppServiceServer is the server API for TerminalAppService service.
 // All implementations must embed UnimplementedTerminalAppServiceServer
 // for forward compatibility
 type TerminalAppServiceServer interface {
-	HandleMessage(TerminalAppService_HandleMessageServer) error
+	HandleMessage(context.Context, *Message) (*emptypb.Empty, error)
 	mustEmbedUnimplementedTerminalAppServiceServer()
 }
 
@@ -273,8 +213,8 @@ type TerminalAppServiceServer interface {
 type UnimplementedTerminalAppServiceServer struct {
 }
 
-func (UnimplementedTerminalAppServiceServer) HandleMessage(TerminalAppService_HandleMessageServer) error {
-	return status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
+func (UnimplementedTerminalAppServiceServer) HandleMessage(context.Context, *Message) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HandleMessage not implemented")
 }
 func (UnimplementedTerminalAppServiceServer) mustEmbedUnimplementedTerminalAppServiceServer() {}
 
@@ -289,30 +229,22 @@ func RegisterTerminalAppServiceServer(s grpc.ServiceRegistrar, srv TerminalAppSe
 	s.RegisterService(&TerminalAppService_ServiceDesc, srv)
 }
 
-func _TerminalAppService_HandleMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(TerminalAppServiceServer).HandleMessage(&terminalAppServiceHandleMessageServer{stream})
-}
-
-type TerminalAppService_HandleMessageServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*Message, error)
-	grpc.ServerStream
-}
-
-type terminalAppServiceHandleMessageServer struct {
-	grpc.ServerStream
-}
-
-func (x *terminalAppServiceHandleMessageServer) SendAndClose(m *emptypb.Empty) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *terminalAppServiceHandleMessageServer) Recv() (*Message, error) {
-	m := new(Message)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _TerminalAppService_HandleMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(TerminalAppServiceServer).HandleMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.TerminalAppService/HandleMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminalAppServiceServer).HandleMessage(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // TerminalAppService_ServiceDesc is the grpc.ServiceDesc for TerminalAppService service.
@@ -321,13 +253,12 @@ func (x *terminalAppServiceHandleMessageServer) Recv() (*Message, error) {
 var TerminalAppService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "chat.TerminalAppService",
 	HandlerType: (*TerminalAppServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "HandleMessage",
-			Handler:       _TerminalAppService_HandleMessage_Handler,
-			ClientStreams: true,
+			MethodName: "HandleMessage",
+			Handler:    _TerminalAppService_HandleMessage_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "chat.proto",
 }
