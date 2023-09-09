@@ -1,4 +1,4 @@
-module github.com/TheBromo/goWebService/client
+module github.com/TheBromo/gochat/client
 
 go 1.20
 
