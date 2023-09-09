@@ -1,5 +1,5 @@
-github.com/TheBromo/goWebService/common v0.0.0-20230909160502-b8775351a464 h1:4+Cz5I3/hIHTlHa4kUfQ2SvkcU0q5SWjxvT/jOygxzw=
-github.com/TheBromo/goWebService/common v0.0.0-20230909160502-b8775351a464/go.mod h1:1CPxSHQbpoCaoyYg9cgm0Jx35G6TCNX1/MAx0lY/k6A=
+github.com/TheBromo/gochat/common v0.0.0-20230909160502-b8775351a464 h1:4+Cz5I3/hIHTlHa4kUfQ2SvkcU0q5SWjxvT/jOygxzw=
+github.com/TheBromo/gochat/common v0.0.0-20230909160502-b8775351a464/go.mod h1:1CPxSHQbpoCaoyYg9cgm0Jx35G6TCNX1/MAx0lY/k6A=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
 github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=

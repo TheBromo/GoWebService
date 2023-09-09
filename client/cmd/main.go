@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	message "github.com/TheBromo/goWebService/client/message"
+	message "github.com/TheBromo/gochat/client/message"
 )
 
 var (
