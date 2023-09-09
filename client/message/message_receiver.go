@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/TheBromo/goWebService/common/chat"
+	pb "github.com/TheBromo/gochat/common/chat"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
