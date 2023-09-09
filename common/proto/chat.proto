@@ -2,11 +2,14 @@ syntax = "proto3";
 package chat;
 option go_package = "../chat";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
 
 
 message Message {
     string content = 1;
     string sender = 2;
+    google.protobuf.Timestamp timestamp = 3;
 }
 
 message Login {
@@ -17,9 +20,6 @@ message Login {
 service ChatService {
     rpc Register(Login) returns (google.protobuf.Empty);
     rpc Unregister(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc HandleMessage(Message) returns (google.protobuf.Empty);
-}
-
-service TerminalAppService {
-    rpc HandleMessage(Message)returns (google.protobuf.Empty);
+    rpc SendMessage(Message) returns (google.protobuf.Empty);
+    rpc PollMesssages(google.protobuf.Timestamp) returns (stream Message);
 }
