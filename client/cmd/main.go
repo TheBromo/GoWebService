@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-
-	message "github.com/TheBromo/gochat/client/message"
 )
 
 var (
@@ -17,5 +15,5 @@ func main() {
 
 	log.Println("starting client")
 
-	message.StartReceiver(*port)
+	//message.StartReceiver(*port)
 }
