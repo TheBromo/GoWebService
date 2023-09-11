@@ -1,23 +1,19 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 
 	pb "github.com/TheBromo/gochat/common/chat"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/peer"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	port                 = flag.Int("port", 50051, "The server port")
-	mesages []pb.Message = make([]pb.Message,0)
+	port                    = flag.Int("port", 50051, "The server port")
+	mesages chan pb.Message = make(chan pb.Message)
 )
 
 func main() {
@@ -42,49 +38,35 @@ type server struct {
 	pb.UnimplementedChatServiceServer
 }
 
-func (c *server) Register(context context.Context, message *pb.Login) (*emptypb.Empty, error) {
-	username := message.GetUsername()
+func (c *server) SendMessage(stream pb.ChatService_SendMessageServer) error {
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			mesages <- *resp
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Fatalf("cannot receive %v", err)
+				return
 
-	p, ok := peer.FromContext(context)
-
-	if ok {
-		//clients[p.Addr] = username
-		log.Printf("new user registered : %s, address %s \n", username, p.Addr.String())
-		return &emptypb.Empty{}, nil
-	} else {
-		log.Println("can't retrieve user address")
-		return nil, errors.New("can't retrieve user address")
-	}
+			}
+		}
+	}()
+	return nil
 }
 
-func (c *server) Unregister(context context.Context, empty *emptypb.Empty) (*emptypb.Empty, error) {
-	/*p, _ := peer.FromContext(context)
-	_, ok := clients[p.Addr]
-	if ok {
-		delete(clients, p.Addr)
-		return &emptypb.Empty{}, nil
-	} else {
-		log.Println("user not registered")
-		return nil, errors.New("user not registered")
-	}*/
-	log.Printf("user unregistered\n")
-	return &emptypb.Empty{}, nil
-}
-
-func (c *server) SendMessage(context context.Context, message *pb.Message) (*emptypb.Empty, error) {
-	mesages = append(mesages, *message)
-	return &emptypb.Empty{}, nil
-}
-
-func (c *server) PollMesssages(timestamp *timestamppb.Timestamp, msgserver pb.ChatService_PollMesssagesServer) error {
-	for _, msg := range mesages {
+func (c *server) PollMesssages(username *pb.Username, msgserver pb.ChatService_ReceiveMesssagesServer) error {
+	log.Printf("New user joined: %s \n", username.GetUsername())
+	
+	/*for true {
 		if msg.Timestamp.GetNanos() > timestamp.GetNanos() {
 			if err := msgserver.Send(&msg); err != nil {
 				log.Printf("send error %v", err)
 			}
 		}
 	}
-
+	*/
 	msgserver.Context().Done()
 	return nil
 }
