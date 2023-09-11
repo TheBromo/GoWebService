@@ -12,7 +12,6 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,10 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
-	Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	Unregister(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	PollMesssages(ctx context.Context, in *timestamppb.Timestamp, opts ...grpc.CallOption) (ChatService_PollMesssagesClient, error)
+	SendMessage(ctx context.Context, opts ...grpc.CallOption) (ChatService_SendMessageClient, error)
+	ReceiveMesssages(ctx context.Context, in *Username, opts ...grpc.CallOption) (ChatService_ReceiveMesssagesClient, error)
 }
 
 type chatServiceClient struct {
@@ -38,39 +35,46 @@ func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
 }
 
-func (c *chatServiceClient) Register(ctx context.Context, in *Login, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/chat.ChatService/Register", in, out, opts...)
+func (c *chatServiceClient) SendMessage(ctx context.Context, opts ...grpc.CallOption) (ChatService_SendMessageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[0], "/chat.ChatService/SendMessage", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &chatServiceSendMessageClient{stream}
+	return x, nil
 }
 
-func (c *chatServiceClient) Unregister(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/chat.ChatService/Unregister", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+type ChatService_SendMessageClient interface {
+	Send(*Message) error
+	CloseAndRecv() (*emptypb.Empty, error)
+	grpc.ClientStream
 }
 
-func (c *chatServiceClient) SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/chat.ChatService/SendMessage", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+type chatServiceSendMessageClient struct {
+	grpc.ClientStream
 }
 
-func (c *chatServiceClient) PollMesssages(ctx context.Context, in *timestamppb.Timestamp, opts ...grpc.CallOption) (ChatService_PollMesssagesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[0], "/chat.ChatService/PollMesssages", opts...)
+func (x *chatServiceSendMessageClient) Send(m *Message) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *chatServiceSendMessageClient) CloseAndRecv() (*emptypb.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *chatServiceClient) ReceiveMesssages(ctx context.Context, in *Username, opts ...grpc.CallOption) (ChatService_ReceiveMesssagesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[1], "/chat.ChatService/ReceiveMesssages", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &chatServicePollMesssagesClient{stream}
+	x := &chatServiceReceiveMesssagesClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -80,16 +84,16 @@ func (c *chatServiceClient) PollMesssages(ctx context.Context, in *timestamppb.T
 	return x, nil
 }
 
-type ChatService_PollMesssagesClient interface {
+type ChatService_ReceiveMesssagesClient interface {
 	Recv() (*Message, error)
 	grpc.ClientStream
 }
 
-type chatServicePollMesssagesClient struct {
+type chatServiceReceiveMesssagesClient struct {
 	grpc.ClientStream
 }
 
-func (x *chatServicePollMesssagesClient) Recv() (*Message, error) {
+func (x *chatServiceReceiveMesssagesClient) Recv() (*Message, error) {
 	m := new(Message)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -101,10 +105,8 @@ func (x *chatServicePollMesssagesClient) Recv() (*Message, error) {
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
-	Register(context.Context, *Login) (*emptypb.Empty, error)
-	Unregister(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	SendMessage(context.Context, *Message) (*emptypb.Empty, error)
-	PollMesssages(*timestamppb.Timestamp, ChatService_PollMesssagesServer) error
+	SendMessage(ChatService_SendMessageServer) error
+	ReceiveMesssages(*Username, ChatService_ReceiveMesssagesServer) error
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -112,17 +114,11 @@ type ChatServiceServer interface {
 type UnimplementedChatServiceServer struct {
 }
 
-func (UnimplementedChatServiceServer) Register(context.Context, *Login) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+func (UnimplementedChatServiceServer) SendMessage(ChatService_SendMessageServer) error {
+	return status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
-func (UnimplementedChatServiceServer) Unregister(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Unregister not implemented")
-}
-func (UnimplementedChatServiceServer) SendMessage(context.Context, *Message) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
-}
-func (UnimplementedChatServiceServer) PollMesssages(*timestamppb.Timestamp, ChatService_PollMesssagesServer) error {
-	return status.Errorf(codes.Unimplemented, "method PollMesssages not implemented")
+func (UnimplementedChatServiceServer) ReceiveMesssages(*Username, ChatService_ReceiveMesssagesServer) error {
+	return status.Errorf(codes.Unimplemented, "method ReceiveMesssages not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -137,78 +133,50 @@ func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
 	s.RegisterService(&ChatService_ServiceDesc, srv)
 }
 
-func _ChatService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Login)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).Register(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/chat.ChatService/Register",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).Register(ctx, req.(*Login))
-	}
-	return interceptor(ctx, in, info, handler)
+func _ChatService_SendMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChatServiceServer).SendMessage(&chatServiceSendMessageServer{stream})
 }
 
-func _ChatService_Unregister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).Unregister(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/chat.ChatService/Unregister",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).Unregister(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
+type ChatService_SendMessageServer interface {
+	SendAndClose(*emptypb.Empty) error
+	Recv() (*Message, error)
+	grpc.ServerStream
 }
 
-func _ChatService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).SendMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/chat.ChatService/SendMessage",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).SendMessage(ctx, req.(*Message))
-	}
-	return interceptor(ctx, in, info, handler)
+type chatServiceSendMessageServer struct {
+	grpc.ServerStream
 }
 
-func _ChatService_PollMesssages_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(timestamppb.Timestamp)
+func (x *chatServiceSendMessageServer) SendAndClose(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *chatServiceSendMessageServer) Recv() (*Message, error) {
+	m := new(Message)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _ChatService_ReceiveMesssages_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Username)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ChatServiceServer).PollMesssages(m, &chatServicePollMesssagesServer{stream})
+	return srv.(ChatServiceServer).ReceiveMesssages(m, &chatServiceReceiveMesssagesServer{stream})
 }
 
-type ChatService_PollMesssagesServer interface {
+type ChatService_ReceiveMesssagesServer interface {
 	Send(*Message) error
 	grpc.ServerStream
 }
 
-type chatServicePollMesssagesServer struct {
+type chatServiceReceiveMesssagesServer struct {
 	grpc.ServerStream
 }
 
-func (x *chatServicePollMesssagesServer) Send(m *Message) error {
+func (x *chatServiceReceiveMesssagesServer) Send(m *Message) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -218,24 +186,16 @@ func (x *chatServicePollMesssagesServer) Send(m *Message) error {
 var ChatService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "chat.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Register",
-			Handler:    _ChatService_Register_Handler,
-		},
-		{
-			MethodName: "Unregister",
-			Handler:    _ChatService_Unregister_Handler,
-		},
-		{
-			MethodName: "SendMessage",
-			Handler:    _ChatService_SendMessage_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PollMesssages",
-			Handler:       _ChatService_PollMesssages_Handler,
+			StreamName:    "SendMessage",
+			Handler:       _ChatService_SendMessage_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ReceiveMesssages",
+			Handler:       _ChatService_ReceiveMesssages_Handler,
 			ServerStreams: true,
 		},
 	},

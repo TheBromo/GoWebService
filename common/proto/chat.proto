@@ -12,14 +12,12 @@ message Message {
     google.protobuf.Timestamp timestamp = 3;
 }
 
-message Login {
-    string username = 3;
+message Username {
+    string Username = 4;
 }
 
 
 service ChatService {
-    rpc Register(Login) returns (google.protobuf.Empty);
-    rpc Unregister(google.protobuf.Empty) returns (google.protobuf.Empty);
-    rpc SendMessage(Message) returns (google.protobuf.Empty);
-    rpc PollMesssages(google.protobuf.Timestamp) returns (stream Message);
+    rpc SendMessage(stream Message) returns (google.protobuf.Empty);
+    rpc ReceiveMesssages(Username) returns (stream Message);
 }
