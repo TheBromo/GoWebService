@@ -3,12 +3,12 @@ module github.com/TheBromo/gochat/server
 go 1.21
 
 require (
+	github.com/TheBromo/gochat/common v0.0.0-20230909165425-789cf0b76ed7
 	google.golang.org/grpc v1.58.0
 	google.golang.org/protobuf v1.31.0
 )
 
 require (
-	github.com/TheBromo/gochat/common v0.0.0-20230909163935-23cff4fef28d // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect

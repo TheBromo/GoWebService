@@ -12,51 +12,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	//timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	port    = flag.Int("port", 50051, "The server port")
-	clients = make(map[net.Addr]string)
+	port                 = flag.Int("port", 50051, "The server port")
+	mesages []pb.Message = make([]pb.Message,0)
 )
-
-type server struct {
-	pb.UnimplementedChatServiceServer
-}
-
-func (c *server) RegisterRegister(context context.Context, message *pb.Login) (*emptypb.Empty, error) {
-	username := message.GetUsername()
-
-	p, ok := peer.FromContext(context)
-
-	if ok {
-		clients[p.Addr] = username
-		log.Printf("new user registered : %s, address %s \n", username, p.Addr.String())
-		return &emptypb.Empty{}, nil
-	} else {
-		log.Println("can't retrieve user address")
-		return nil, errors.New("can't retrieve user address")
-	}
-}
-
-func (c *server) Unregister(context context.Context, empty *emptypb.Empty) (*emptypb.Empty, error) {
-	p, _ := peer.FromContext(context)
-	_, ok := clients[p.Addr]
-	if ok {
-		delete(clients, p.Addr)
-		return &emptypb.Empty{}, nil
-	} else {
-		log.Println("user not registered")
-		return nil, errors.New("user not registered")
-	}
-}
-
-func (c *server) HandleMessage(context context.Context, message *pb.Message) (*emptypb.Empty, error) {
-	for k := range clients {
-		log.Println(k)
-	}
-	return nil, nil
-}
 
 func main() {
 	flag.Parse()
@@ -74,4 +36,55 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+type server struct {
+	pb.UnimplementedChatServiceServer
+}
+
+func (c *server) Register(context context.Context, message *pb.Login) (*emptypb.Empty, error) {
+	username := message.GetUsername()
+
+	p, ok := peer.FromContext(context)
+
+	if ok {
+		//clients[p.Addr] = username
+		log.Printf("new user registered : %s, address %s \n", username, p.Addr.String())
+		return &emptypb.Empty{}, nil
+	} else {
+		log.Println("can't retrieve user address")
+		return nil, errors.New("can't retrieve user address")
+	}
+}
+
+func (c *server) Unregister(context context.Context, empty *emptypb.Empty) (*emptypb.Empty, error) {
+	/*p, _ := peer.FromContext(context)
+	_, ok := clients[p.Addr]
+	if ok {
+		delete(clients, p.Addr)
+		return &emptypb.Empty{}, nil
+	} else {
+		log.Println("user not registered")
+		return nil, errors.New("user not registered")
+	}*/
+	log.Printf("user unregistered\n")
+	return &emptypb.Empty{}, nil
+}
+
+func (c *server) SendMessage(context context.Context, message *pb.Message) (*emptypb.Empty, error) {
+	mesages = append(mesages, *message)
+	return &emptypb.Empty{}, nil
+}
+
+func (c *server) PollMesssages(timestamp *timestamppb.Timestamp, msgserver pb.ChatService_PollMesssagesServer) error {
+	for _, msg := range mesages {
+		if msg.Timestamp.GetNanos() > timestamp.GetNanos() {
+			if err := msgserver.Send(&msg); err != nil {
+				log.Printf("send error %v", err)
+			}
+		}
+	}
+
+	msgserver.Context().Done()
+	return nil
 }
