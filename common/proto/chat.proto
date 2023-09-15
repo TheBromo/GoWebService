@@ -18,6 +18,6 @@ message Username {
 
 
 service ChatService {
-    rpc SendMessage(stream Message) returns (google.protobuf.Empty);
-    rpc ReceiveMesssages(Username) returns (stream Message);
+    rpc RegisterUsername(Username) returns (google.proto.Empty);
+    rpc ExchangeMesssages(stream Message) returns (stream Message);
 }
