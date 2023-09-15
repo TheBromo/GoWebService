@@ -19,7 +19,8 @@
 				"waderyan.gitblame",
 				"christian-kohler.path-intellisense",
 				"redhat.vscode-yaml",
-				"zxh404.vscode-proto3"
+				"zxh404.vscode-proto3",
+				"wayou.vscode-todo-highlight"
 			]
 		}
 	},

@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
-	RegisterUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ExchangeMesssages(ctx context.Context, opts ...grpc.CallOption) (ChatService_ExchangeMesssagesClient, error)
 }
 
@@ -33,15 +31,6 @@ type chatServiceClient struct {
 
 func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
-}
-
-func (c *chatServiceClient) RegisterUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/chat.ChatService/RegisterUsername", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *chatServiceClient) ExchangeMesssages(ctx context.Context, opts ...grpc.CallOption) (ChatService_ExchangeMesssagesClient, error) {
@@ -79,7 +68,6 @@ func (x *chatServiceExchangeMesssagesClient) Recv() (*Message, error) {
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
-	RegisterUsername(context.Context, *Username) (*emptypb.Empty, error)
 	ExchangeMesssages(ChatService_ExchangeMesssagesServer) error
 	mustEmbedUnimplementedChatServiceServer()
 }
@@ -88,9 +76,6 @@ type ChatServiceServer interface {
 type UnimplementedChatServiceServer struct {
 }
 
-func (UnimplementedChatServiceServer) RegisterUsername(context.Context, *Username) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterUsername not implemented")
-}
 func (UnimplementedChatServiceServer) ExchangeMesssages(ChatService_ExchangeMesssagesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ExchangeMesssages not implemented")
 }
@@ -105,24 +90,6 @@ type UnsafeChatServiceServer interface {
 
 func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
 	s.RegisterService(&ChatService_ServiceDesc, srv)
-}
-
-func _ChatService_RegisterUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Username)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).RegisterUsername(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/chat.ChatService/RegisterUsername",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).RegisterUsername(ctx, req.(*Username))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _ChatService_ExchangeMesssages_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -157,12 +124,7 @@ func (x *chatServiceExchangeMesssagesServer) Recv() (*Message, error) {
 var ChatService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "chat.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "RegisterUsername",
-			Handler:    _ChatService_RegisterUsername_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ExchangeMesssages",

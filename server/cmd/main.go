@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 
 	pb "github.com/TheBromo/gochat/common/chat"
+
 	"google.golang.org/grpc"
 )
 
@@ -38,21 +38,18 @@ type server struct {
 	pb.UnimplementedChatServiceServer
 }
 
-func (c *server) SendMessage(username *pb.Username) (google.protobuf.Empty ,error ){
+func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer) error {
 
-}
+	//handle input
+	go func() {
 
-func (c *server) PollMesssages(, msgserver pb.ChatService_ReceiveMesssagesServer) error {
-	log.Printf("New user joined: %s \n", username.GetUsername())
-	
-	/*for true {
-		if msg.Timestamp.GetNanos() > timestamp.GetNanos() {
-			if err := msgserver.Send(&msg); err != nil {
-				log.Printf("send error %v", err)
-			}
-		}
-	}
-	*/
+	}()
+
+	//hande msg distribution
+	go func() {
+
+	}()
+
 	msgserver.Context().Done()
 	return nil
 }
