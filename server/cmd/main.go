@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 
 	pb "github.com/TheBromo/gochat/common/chat"
 	"github.com/TheBromo/gochat/server/msg_distributor"
@@ -40,9 +41,12 @@ type server struct {
 }
 
 func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer) error {
+	var wg sync.WaitGroup
 
 	//handle input
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case <-msgserver.Context().Done():
@@ -63,14 +67,16 @@ func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer)
 	}()
 
 	//hande msg distribution
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			inputC := make(chan []pb.Message)
 			msgDis.RegisterConsumer(msgserver.Context(), inputC)
 			defer msgDis.DeregisterConsumer(msgserver.Context())
 
 			select {
-			case <- msgserver.Context().Done():
+			case <-msgserver.Context().Done():
 				log.Fatalln(msgserver.Context().Err())
 				return
 			default:
@@ -82,5 +88,6 @@ func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer)
 		}
 	}()
 
+	wg.Wait()
 	return nil
 }
