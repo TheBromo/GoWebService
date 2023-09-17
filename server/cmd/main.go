@@ -20,6 +20,7 @@ var (
 
 func main() {
 	flag.Parse()
+	defer msgDis.Close()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
@@ -85,6 +86,5 @@ func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer)
 	}()
 
 	wg.Wait()
-	msgDis.Close()
 	return nil
 }
