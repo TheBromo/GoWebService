@@ -3,6 +3,7 @@ package msg_distributor
 import (
 	"context"
 	"sync"
+	"time"
 
 	pb "github.com/TheBromo/gochat/common/chat"
 )
@@ -14,19 +15,19 @@ var (
 type IMessageDistributor interface {
 	Close()
 	DeregisterConsumer(ctx context.Context)
-	Distribute(messages []pb.Message) error
+	Distribute(messages pb.Message) error
 	RegisterConsumer(ctx context.Context, consumer chan []pb.Message)
 	handleDistributions()
 }
 
 type messageDistributorImpl struct {
-	msgInput  chan []pb.Message
+	msgInput  chan pb.Message
 	consumers map[context.Context]chan []pb.Message
 }
 
 func New() *messageDistributorImpl {
 	distributor := messageDistributorImpl{
-		msgInput:  make(chan []pb.Message),
+		msgInput:  make(chan pb.Message),
 		consumers: make(map[context.Context]chan []pb.Message),
 	}
 
@@ -57,25 +58,35 @@ func (md *messageDistributorImpl) DeregisterConsumer(ctx context.Context) {
 	mu.Unlock()
 }
 
-func (md *messageDistributorImpl) Distribute(messages []pb.Message) error {
-	md.msgInput <- messages
+func (md *messageDistributorImpl) Distribute(messages *pb.Message) error {
+	md.msgInput <- *messages
 	return nil
 }
 
 func (md *messageDistributorImpl) handleDistributions() {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	messages := make([]pb.Message, 0)
 
-	//TODO base this on an interval
 	for {
-		msg, open := <-md.msgInput
 
-		if !open {
-			return
+		select {
+		case <-ticker.C:
+			mu.Lock()
+			for _, v := range md.consumers {
+				v <- messages
+			}
+			messages = make([]pb.Message, 0)
+			mu.Unlock()
+
+		default:
+			msg, open := <-md.msgInput
+
+			if !open {
+				ticker.Stop()
+				return
+			}
+			messages = append(messages, msg)
 		}
 
-		mu.Lock()
-		for _, v := range md.consumers {
-			v <- msg
-		}
-		mu.Unlock()
 	}
 }

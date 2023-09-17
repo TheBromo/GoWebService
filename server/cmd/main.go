@@ -53,13 +53,9 @@ func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer)
 				log.Fatalln(msgserver.Context().Err())
 				return
 			default:
-				messages, err := msgserver.Recv()
+				message, err := msgserver.Recv()
 				if err != nil {
-					//TODO change this that it collect messages and then distributes them
-					test := make([]pb.Message, 1)
-					test[0] = *messages
-
-					msgDis.Distribute(test)
+					msgDis.Distribute(message)
 				}
 			}
 		}
@@ -89,5 +85,6 @@ func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer)
 	}()
 
 	wg.Wait()
+	msgDis.Close()
 	return nil
 }
