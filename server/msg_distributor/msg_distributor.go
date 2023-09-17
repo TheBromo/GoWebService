@@ -11,52 +11,62 @@ var (
 	mu sync.Mutex
 )
 
-type MsgDistributor struct {
-	msg_input chan []pb.Message
+type IMessageDistributor interface {
+	Close()
+	DeregisterConsumer(ctx context.Context)
+	Distribute(messages []pb.Message) error
+	RegisterConsumer(ctx context.Context, consumer chan []pb.Message)
+	handleDistributions()
+}
+
+type messageDistributorImpl struct {
+	msgInput  chan []pb.Message
 	consumers map[context.Context]chan []pb.Message
 }
 
-func (MsgDistributor) New() MsgDistributor {
-	distributor := MsgDistributor{
-		msg_input: make(chan []pb.Message),
+func New() *messageDistributorImpl {
+	distributor := messageDistributorImpl{
+		msgInput:  make(chan []pb.Message),
 		consumers: make(map[context.Context]chan []pb.Message),
 	}
 
 	go distributor.handleDistributions()
 
-	return distributor
+	return &distributor
 }
 
-func (md *MsgDistributor) Close() {
+func (md *messageDistributorImpl) Close() {
 	mu.Lock()
-	close(md.msg_input)
+	close(md.msgInput)
 	for _, v := range md.consumers {
 		close(v)
 	}
 	mu.Unlock()
 }
 
-func (md *MsgDistributor) RegisterConsumer(ctx context.Context, consumer chan []pb.Message) {
+func (md *messageDistributorImpl) RegisterConsumer(ctx context.Context, consumer chan []pb.Message) {
 	mu.Lock()
 	md.consumers[ctx] = consumer
 	mu.Unlock()
 }
 
-func (md *MsgDistributor) DeregisterConsumer(ctx context.Context) {
+func (md *messageDistributorImpl) DeregisterConsumer(ctx context.Context) {
 	mu.Lock()
 	close(md.consumers[ctx])
 	delete(md.consumers, ctx)
 	mu.Unlock()
 }
 
-func (md *MsgDistributor) Distribute(messages []pb.Message) error {
-	md.msg_input <- messages
+func (md *messageDistributorImpl) Distribute(messages []pb.Message) error {
+	md.msgInput <- messages
 	return nil
 }
 
-func (md *MsgDistributor) handleDistributions() {
+func (md *messageDistributorImpl) handleDistributions() {
+
+	//TODO base this on an interval
 	for {
-		msg, open := <-md.msg_input
+		msg, open := <-md.msgInput
 
 		if !open {
 			return
