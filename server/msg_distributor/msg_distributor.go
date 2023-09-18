@@ -58,9 +58,8 @@ func (md *messageDistributorImpl) DeregisterConsumer(ctx context.Context) {
 	mu.Unlock()
 }
 
-func (md *messageDistributorImpl) Distribute(messages *pb.Message) error {
+func (md *messageDistributorImpl) Distribute(messages *pb.Message)  {
 	md.msgInput <- *messages
-	return nil
 }
 
 func (md *messageDistributorImpl) handleDistributions() {
