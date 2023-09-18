@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,10 @@ import (
 )
 
 type TickMsg time.Time
+
+var (
+	count = 0
+)
 
 func main() {
 	p := tea.NewProgram(initialModel())
@@ -103,11 +108,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.GotoBottom()
 		}
 	case TickMsg:
+		count++
 		// Return your Every command again to loop.
-		m.messages = append(m.messages, m.senderStyle.Render("You: ")+"message")
+		m.messages = append(m.messages, m.senderStyle.Render("You: ")+"message "+strconv.Itoa(count))
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
+
+	case tea.WindowSizeMsg:
+		chatHeight := lipgloss.Height(m.textarea.View())
+		if !m.ready {
+			m.viewport = viewport.New(msg.Width, msg.Height-chatHeight)
+			m.textarea.SetWidth(msg.Width)
+			m.ready = true
+		} else {
+			m.viewport.Width = msg.Width
+			m.textarea.SetWidth(msg.Width)
+			m.viewport.Height = msg.Height - chatHeight
+		}
 
 	// We handle errors just like any other message
 	case errMsg:
