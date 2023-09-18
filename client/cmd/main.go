@@ -114,7 +114,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
-
 	case tea.WindowSizeMsg:
 		chatHeight := lipgloss.Height(m.textarea.View())
 		if !m.ready {
@@ -126,7 +125,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.textarea.SetWidth(msg.Width)
 			m.viewport.Height = msg.Height - chatHeight
 		}
-
 	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
