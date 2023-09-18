@@ -9,7 +9,7 @@ tasks:
       - go run ./client/cmd
   server:
     cmds:
-      - go run ./server
+      - go run ./server/cmd
   gen-grpc:
     dir: common/proto
     cmds:

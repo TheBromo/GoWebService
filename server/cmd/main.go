@@ -11,6 +11,7 @@ import (
 	"github.com/TheBromo/gochat/server/msg_distributor"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -28,8 +29,10 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-
 	pb.RegisterChatServiceServer(s, &server{})
+
+	reflection.Register(s)
+
 	log.Printf("server listening at %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
@@ -41,7 +44,7 @@ type server struct {
 	pb.UnimplementedChatServiceServer
 }
 
-func (c *server) PollMesssages(msgserver pb.ChatService_ExchangeMesssagesServer) error {
+func (c *server) ExchangeMesssages(msgserver pb.ChatService_ExchangeMesssagesServer) error {
 	var wg sync.WaitGroup
 
 	//handle input
