@@ -58,8 +58,10 @@ func (c *server) ExchangeMesssages(msgserver pb.ChatService_ExchangeMesssagesSer
 				return
 			default:
 				message, err := msgserver.Recv()
-				if err != nil {
+				if err == nil {
 					msgDis.Distribute(message)
+				} else {
+					log.Fatalln(err)
 				}
 			}
 		}
