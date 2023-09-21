@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TickMsg time.Time
@@ -32,6 +33,7 @@ type model struct {
 	err         error
 	input       chan pb.Message
 	output      chan pb.Message
+	userName    string
 }
 
 // Send a message every second.
@@ -72,6 +74,7 @@ Type a message and press Enter to send.`)
 		err:         nil,
 		input:       input,
 		output:      output,
+		userName:    userName,
 	}
 }
 
@@ -96,6 +99,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
+			m.input <- pb.Message{
+				Sender:    m.userName,
+				Timestamp: timestamppb.New(time.Now()),
+				Content:   m.textarea.Value(),
+			}
 			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
@@ -104,6 +112,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		count++
 		// Return your Every command again to loop.
 		m.messages = append(m.messages, m.senderStyle.Render("You: ")+"message "+strconv.Itoa(count))
+		//TODO find out how to get the messages
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
