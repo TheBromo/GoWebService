@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"sync"
 
@@ -25,7 +25,7 @@ func main() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		slog.Error("failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
@@ -33,10 +33,10 @@ func main() {
 
 	reflection.Register(s)
 
-	log.Printf("server listening at %v", lis.Addr())
+	slog.Info("server listening at %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		slog.Error("failed to serve: %v", err)
 	}
 }
 
@@ -54,14 +54,14 @@ func (c *server) ExchangeMesssages(msgserver pb.ChatService_ExchangeMesssagesSer
 		for {
 			select {
 			case <-msgserver.Context().Done():
-				log.Fatalln(msgserver.Context().Err())
+				slog.Error("connection enden with error: %s", msgserver.Context().Err())
 				return
 			default:
 				message, err := msgserver.Recv()
 				if err == nil {
 					msgDis.Distribute(message)
 				} else {
-					log.Fatalln(err)
+					slog.Error("error while reveiving message: %s", err)
 				}
 			}
 		}
@@ -79,7 +79,7 @@ func (c *server) ExchangeMesssages(msgserver pb.ChatService_ExchangeMesssagesSer
 
 			select {
 			case <-msgserver.Context().Done():
-				log.Fatalln(msgserver.Context().Err())
+				slog.Error("connection enden with error: %s", msgserver.Context().Err())
 				return
 			default:
 				messages := <-inputC

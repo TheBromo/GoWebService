@@ -41,7 +41,7 @@ func tickEvery() tea.Cmd {
 	})
 }
 
-func InitialModel(input chan pb.Message, output chan pb.Message) model {
+func InitialModel(input chan pb.Message, output chan pb.Message, userName string) model {
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
 	ta.Focus()

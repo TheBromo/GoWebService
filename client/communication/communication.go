@@ -2,7 +2,7 @@ package communication
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 
 	pb "github.com/TheBromo/gochat/common/chat"
@@ -18,7 +18,7 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 	var opts []grpc.DialOption
 	conn, err := grpc.Dial(srvAddr, opts...)
 	if err != nil {
-		log.Fatal("couldnt connect to server")
+		slog.Error("couldnt connect to server")
 		return
 	}
 	defer conn.Close()
@@ -30,7 +30,7 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 	srv, err := client.ExchangeMesssages(context.Background())
 
 	if err != nil {
-		log.Fatal("couldnt connect to server")
+		slog.Error("couldnt connect to server")
 		return
 	}
 
