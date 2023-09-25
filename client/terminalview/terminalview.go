@@ -2,7 +2,6 @@ package terminalview
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -111,8 +110,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TickMsg:
 		count++
 		// Return your Every command again to loop.
-		m.messages = append(m.messages, m.senderStyle.Render("You: ")+"message "+strconv.Itoa(count))
-		//TODO find out how to get the messages
+		select {
+		case value := <-m.output:
+			m.messages = append(m.messages, m.senderStyle.Render(value.Sender+": ")+value.Content)
+		default:
+		}
+
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
