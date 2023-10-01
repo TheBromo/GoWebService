@@ -7,6 +7,7 @@ import (
 
 	pb "github.com/TheBromo/gochat/common/chat"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -15,10 +16,9 @@ var (
 
 func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr string) {
 
-	var opts []grpc.DialOption
-	conn, err := grpc.Dial(srvAddr, opts...)
+	conn, err := grpc.Dial(srvAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		slog.Error("couldnt connect to server")
+		slog.Error("couldnt connect to server %v", err)
 		return
 	}
 	defer conn.Close()
@@ -47,7 +47,6 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 	}()
 
 	wg.Wait()
-	srv.CloseSend()
 }
 
 // channel in
@@ -66,6 +65,8 @@ func receive(output chan pb.Message, srv pb.ChatService_ExchangeMesssagesClient)
 		if err != nil {
 			running = false
 		}
-		output <- *msg
+		if msg != nil {
+			output <- *msg // Only send if msg is not nil
+		}
 	}
 }

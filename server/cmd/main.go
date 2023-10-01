@@ -25,7 +25,7 @@ func main() {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		slog.Error("failed to listen: %v", err)
+		slog.Error("failed to listen:", err)
 	}
 
 	s := grpc.NewServer()
@@ -33,7 +33,7 @@ func main() {
 
 	reflection.Register(s)
 
-	slog.Info("server listening at %v", lis.Addr())
+	slog.Info("server listening at " + lis.Addr().String())
 
 	if err := s.Serve(lis); err != nil {
 		slog.Error("failed to serve: %v", err)

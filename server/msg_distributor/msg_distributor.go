@@ -20,13 +20,13 @@ type IMessageDistributor interface {
 	handleDistributions()
 }
 
-type messageDistributorImpl struct {
+type MessageDistributorImpl struct {
 	msgInput  chan pb.Message
 	consumers map[context.Context]chan []pb.Message
 }
 
-func New() *messageDistributorImpl {
-	distributor := messageDistributorImpl{
+func New() *MessageDistributorImpl {
+	distributor := MessageDistributorImpl{
 		msgInput:  make(chan pb.Message),
 		consumers: make(map[context.Context]chan []pb.Message),
 	}
@@ -36,7 +36,7 @@ func New() *messageDistributorImpl {
 	return &distributor
 }
 
-func (md *messageDistributorImpl) Close() {
+func (md *MessageDistributorImpl) Close() {
 	mu.Lock()
 	close(md.msgInput)
 	for _, v := range md.consumers {
@@ -45,24 +45,24 @@ func (md *messageDistributorImpl) Close() {
 	mu.Unlock()
 }
 
-func (md *messageDistributorImpl) RegisterConsumer(ctx context.Context, consumer chan []pb.Message) {
+func (md *MessageDistributorImpl) RegisterConsumer(ctx context.Context, consumer chan []pb.Message) {
 	mu.Lock()
 	md.consumers[ctx] = consumer
 	mu.Unlock()
 }
 
-func (md *messageDistributorImpl) DeregisterConsumer(ctx context.Context) {
+func (md *MessageDistributorImpl) DeregisterConsumer(ctx context.Context) {
 	mu.Lock()
 	close(md.consumers[ctx])
 	delete(md.consumers, ctx)
 	mu.Unlock()
 }
 
-func (md *messageDistributorImpl) Distribute(messages *pb.Message)  {
+func (md *MessageDistributorImpl) Distribute(messages *pb.Message) {
 	md.msgInput <- *messages
 }
 
-func (md *messageDistributorImpl) handleDistributions() {
+func (md *MessageDistributorImpl) handleDistributions() {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	messages := make([]pb.Message, 0)
 

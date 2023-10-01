@@ -97,6 +97,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
+			//sebbd mut
 			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.input <- pb.Message{
 				Sender:    m.userName,

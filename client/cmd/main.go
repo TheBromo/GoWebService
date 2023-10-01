@@ -5,6 +5,7 @@ package main
 
 import (
 	"log/slog"
+	"sync"
 
 	communication "github.com/TheBromo/gochat/client/communication"
 	terminalview "github.com/TheBromo/gochat/client/terminalview"
@@ -15,16 +16,21 @@ import (
 func main() {
 	input := make(chan pb.Message)
 	output := make(chan pb.Message)
-	addr := "127.0.0.1:50051"
+	addr := "localhost:50051"
 	userName := "Testname"
 
 	p := tea.NewProgram(terminalview.InitialModel(input, output, userName))
 
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		communication.ConnectToServer(input, output, addr)
+		wg.Done()
 	}()
 
 	if _, err := p.Run(); err != nil {
 		slog.Error("ui error occured: %s", err)
 	}
+
+	wg.Wait()
 }
