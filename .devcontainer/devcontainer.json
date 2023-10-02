@@ -6,7 +6,8 @@
 	"image": "mcr.microsoft.com/devcontainers/go:1.21-bullseye",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/protoc:1": {},
-		"ghcr.io/eitsupi/devcontainer-features/go-task:1": {}
+		"ghcr.io/eitsupi/devcontainer-features/go-task:1": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -32,7 +33,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "task install-protoc",
+	"postCreateCommand": "task install-protoc"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
