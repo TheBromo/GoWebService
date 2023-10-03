@@ -94,17 +94,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			fmt.Println(m.textarea.Value())
 			return m, tea.Quit
 		case tea.KeyEnter:
-			//sebbd mut
-			m.messages = append(m.messages, m.senderStyle.Render("You: ")+m.textarea.Value())
 			m.input <- pb.Message{
 				Sender:    m.userName,
 				Timestamp: timestamppb.New(time.Now()),
 				Content:   m.textarea.Value(),
 			}
-			m.viewport.SetContent(strings.Join(m.messages, "\n"))
+			m.textarea.SetValue("")
 			m.textarea.Reset()
 			m.viewport.GotoBottom()
 		}
@@ -120,6 +117,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
+		
 	case tea.WindowSizeMsg:
 		chatHeight := lipgloss.Height(m.textarea.View())
 		if !m.ready {
