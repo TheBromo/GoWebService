@@ -36,13 +36,17 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 
 	wg.Add(1)
 	go func() {
-		send(input, srv)
+		print("aaaaaaaaa")
+		err := send(input, srv)
+		if err != nil {
+			slog.Error(err.Error())
+		}
 		wg.Done()
 	}()
 
 	wg.Add(1)
 	go func() {
-		receive(input, srv)
+		receive(output, srv)
 		wg.Done()
 	}()
 
@@ -50,12 +54,16 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 }
 
 // channel in
-func send(input chan pb.Message, srv pb.ChatService_ExchangeMesssagesClient) {
+func send(input chan pb.Message, srv pb.ChatService_ExchangeMesssagesClient) error {
 	for running {
 		msg, ok := <-input
 		running = ok
-		srv.Send(&msg)
+
+		if err := srv.Send(&msg); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // channel out

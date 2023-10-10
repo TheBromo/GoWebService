@@ -109,7 +109,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		count++
 		// Return your Every command again to loop.
 		select {
-		case value := <-m.output:
+		case value, ok := <-m.output:
+			if !ok {
+				m.messages = append(m.messages, "error with output channel")
+			}
 			m.messages = append(m.messages, m.senderStyle.Render(value.Sender+": ")+value.Content)
 		default:
 		}
@@ -117,7 +120,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 		return m, tickEvery()
-		
+
 	case tea.WindowSizeMsg:
 		chatHeight := lipgloss.Height(m.textarea.View())
 		if !m.ready {

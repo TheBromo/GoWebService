@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.21.1-bullseye AS build
+FROM golang:1.21.2-alpine3.18 AS build
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # copy directory files i.e all files ending with .go
-COPY . ./
+COPY . .
 
 # compile application
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/main.go 

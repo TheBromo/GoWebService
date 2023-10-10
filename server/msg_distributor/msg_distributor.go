@@ -2,6 +2,7 @@ package msg_distributor
 
 import (
 	"context"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -66,6 +67,7 @@ func (md *MessageDistributorImpl) handleDistributions() {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	messages := make([]pb.Message, 0)
 
+	defer slog.Info("stopping handling of Distributions!")
 	for {
 
 		select {
@@ -77,9 +79,8 @@ func (md *MessageDistributorImpl) handleDistributions() {
 			messages = make([]pb.Message, 0)
 			mu.Unlock()
 
-		default:
-			msg, open := <-md.msgInput
-
+		case msg, open := <-md.msgInput:
+			slog.Info("handling distribution for msg: " + msg.Sender + " : " + msg.Content)
 			if !open {
 				ticker.Stop()
 				return

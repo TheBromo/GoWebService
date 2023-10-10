@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	port   = flag.Int("port", 50051, "The server port")
-	msgDis = msg_distributor.New()
+	port = flag.Int("port", 50051, "The server port")
 )
+
+var msgDis = &msg_distributor.MessageDistributorImpl{}
 
 func main() {
 	flag.Parse()
-	defer msgDis.Close()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
@@ -34,6 +34,7 @@ func main() {
 	reflection.Register(s)
 
 	slog.Info("server listening at " + lis.Addr().String())
+	msgDis = msg_distributor.New()
 
 	if err := s.Serve(lis); err != nil {
 		slog.Error("failed to serve: %v", err)
@@ -45,6 +46,10 @@ type server struct {
 }
 
 func (c *server) ExchangeMesssages(msgserver pb.ChatService_ExchangeMesssagesServer) error {
+	slog.Info("starting message exchange with client ")
+
+	defer msgDis.Close()
+
 	var wg sync.WaitGroup
 
 	//handle input
