@@ -36,7 +36,6 @@ func ConnectToServer(input chan pb.Message, output chan pb.Message, srvAddr stri
 
 	wg.Add(1)
 	go func() {
-		print("aaaaaaaaa")
 		err := send(input, srv)
 		if err != nil {
 			slog.Error(err.Error())

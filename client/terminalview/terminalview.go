@@ -15,10 +15,6 @@ import (
 
 type TickMsg time.Time
 
-var (
-	count = 0
-)
-
 type (
 	errMsg error
 )
@@ -37,7 +33,7 @@ type model struct {
 
 // Send a message every second.
 func tickEvery() tea.Cmd {
-	return tea.Every(time.Second, func(t time.Time) tea.Msg {
+	return tea.Every(time.Millisecond*100, func(t time.Time) tea.Msg {
 		return TickMsg(t)
 	})
 }
@@ -59,10 +55,7 @@ func InitialModel(input chan pb.Message, output chan pb.Message, userName string
 
 	ta.ShowLineNumbers = false
 
-	vp := viewport.New(50, 10)
-	vp.SetContent(`Welcome to the chat room!
-Type a message and press Enter to send.`)
-
+	vp := viewport.New(0, 0)
 	ta.KeyMap.InsertNewline.SetEnabled(false)
 
 	return model{
@@ -103,42 +96,47 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.textarea.SetValue("")
 			m.textarea.Reset()
-			m.viewport.GotoBottom()
 		}
 	case TickMsg:
-		count++
-		// Return your Every command again to loop.
 		select {
 		case value, ok := <-m.output:
 			if !ok {
 				m.messages = append(m.messages, "error with output channel")
 			}
 			m.messages = append(m.messages, m.senderStyle.Render(value.Sender+": ")+value.Content)
-		default:
-		}
+			m.viewport.SetContent("\n\n\n" + strings.Join(m.messages, "\n"))
+			m.viewport.GotoBottom()
 
-		m.viewport.SetContent(strings.Join(m.messages, "\n"))
-		m.viewport.GotoBottom()
-		return m, tickEvery()
+			return m, tea.Batch(vpCmd, tickEvery())
+
+		default:
+			return m, tea.Batch(tickEvery())
+		}
 
 	case tea.WindowSizeMsg:
-		chatHeight := lipgloss.Height(m.textarea.View())
-		if !m.ready {
-			m.viewport = viewport.New(msg.Width, msg.Height-chatHeight)
-			m.textarea.SetWidth(msg.Width)
-			m.ready = true
-		} else {
-			m.viewport.Width = msg.Width
-			m.textarea.SetWidth(msg.Width)
-			m.viewport.Height = msg.Height - chatHeight
-		}
-	// We handle errors just like any other message
+		m.handleResize(msg)
+		m.textarea, tiCmd = m.textarea.Update(msg)
+		m.viewport, vpCmd = m.viewport.Update(msg)
+
 	case errMsg:
 		m.err = msg
 		return m, nil
 	}
 
 	return m, tea.Batch(tiCmd, vpCmd)
+}
+
+func (m *model) handleResize(msg tea.WindowSizeMsg) {
+	chatHeight := lipgloss.Height(m.textarea.View())
+	if !m.ready {
+		m.viewport = viewport.New(msg.Width, msg.Height-chatHeight)
+		m.textarea.SetWidth(msg.Width)
+		m.ready = true
+	} else {
+		m.viewport.Width = msg.Width
+		m.textarea.SetWidth(msg.Width)
+		m.viewport.Height = msg.Height - chatHeight
+	}
 }
 
 func (m model) View() string {
